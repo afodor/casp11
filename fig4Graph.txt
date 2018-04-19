@@ -39,11 +39,14 @@ timepoints <- sort(unique(myT$time))
 
 par(mfrow=c(3,2))
 
+xRange= c(  min(myT$MDS2), max(myT$MDS2) )
+yRange = c(  min(myT$MDS3), max(myT$MDS3) )
+
 for ( t in timepoints) 
 {
 	mainText = paste("time",t,"months")
-	plot(myT$MDS2[myT$time==t], myT$MDS3[myT$time==t],main=mainText,xlab="MDS1", ylab="MDS2",
-			col= myT$cage[myT$time==t],pch=16,cex=1.4)
+	plot(myT$MDS2[myT$time==t], myT$MDS3[myT$time==t],main=mainText,xlab="MDS2", ylab="MDS3",
+			col= myT$cage[myT$time==t],pch=16,cex=1.4, xlim=xRange, ylim=yRange)
 }
 
 
