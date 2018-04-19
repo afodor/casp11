@@ -162,11 +162,11 @@ lines( dFrame$indexes-11, -log10(dFrame$pValuesTimeGenotypeInteractionAdjusted),
 
 legend("topright",c("genotype", "time", "time:genotype"),pch=16, col=c("red", "blue", "black"))
 
-plot( 1:10, -log10(pValuesTimeFromMedians),ylim=c(0,6),col="BLUE")
-lines( 1:10, -log10(pValuesTimeFromMedians),ylim=c(0,6),col="BLUE")
+#plot( 1:10, -log10(pValuesTimeFromMedians),ylim=c(0,6),col="BLUE")
+#lines( 1:10, -log10(pValuesTimeFromMedians),ylim=c(0,6),col="BLUE")
 
-points( 1:10, -log10(pValuesMediansVsCategory),ylim=c(0,6),col="RED")
-lines( 1:10, -log10(pValuesMediansVsCategory),ylim=c(0,6),col="RED")
+#points( 1:10, -log10(pValuesMediansVsCategory),ylim=c(0,6),col="RED")
+#lines( 1:10, -log10(pValuesMediansVsCategory),ylim=c(0,6),col="RED")
 
 
 
