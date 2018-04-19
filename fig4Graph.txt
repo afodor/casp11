@@ -32,5 +32,17 @@ for( i in 1:nrow(myT))
 	}
 }
 
-plot(myT$MDS2, myT$MDS3,pch=16,cex=1.6,col=timeColors)
+par(mfrow=c(1,2))
 
+plot(myT$MDS2, myT$MDS3,pch=16,cex=1.6,col=timeColors)
+n <- length(unique(myT$cage))
+
+library("RColorBrewer")
+
+# help from https://stackoverflow.com/questions/15282580/how-to-generate-a-number-of-most-distinctive-colors-in-r
+qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+palette(sample(col_vector, n))
+
+
+plot(myT$MDS2, myT$MDS3,pch=16,cex=1.6,col=myT$cage)
