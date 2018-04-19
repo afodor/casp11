@@ -1,0 +1,175 @@
+rm(list=ls())
+
+# change this path to wherever this git directory is installed locally
+setwd("C:\\Users\\afodor\\git\\casp11\\")
+
+library("nlme")
+
+for (aLevel in 2:6)
+{
+	fileName <- paste("otuAsColumnsLogNorm_rerunPlusMetadata_L", aLevel, ".txt",sep="")
+	myT <- read.table(fileName, header=TRUE, sep="\t")
+	
+	means <- vector()
+	pValuesGenotype <- vector()
+	pValuesTime <- vector()
+	pValuesTimeGenotypeInteraction <- vector()
+	
+	pValuesTimeFromMedians <- vector()
+	
+	pValuesWeightUnivariate <- vector()
+	  
+	indexes <- vector()
+	names <- vector()
+		
+	index <- 1
+	
+	# set to 8:ncol(myT) to pick up metadata and shannon entropy
+	for( i in 12:ncol(myT))
+		if( sum( myT[,i] >0 ) > nrow(myT) /4 ) 
+	{	
+		relativeAbundance <- myT[,i]
+		
+		cage <- factor(myT$cage)
+		genotype <- factor(myT$genotype )
+		maxWeightLossPercent <- myT$maxWeightLossPercent
+		time <- myT$time
+		
+		myFrame <- data.frame(relativeAbundance,cage,genotype,maxWeightLossPercent ,time)
+		
+		M.everything <- lme ( relativeAbundance ~ genotype * factor(time), method="REML", random = ~1 | cage,
+					data = myFrame) 
+		
+		myAnova<- anova(M.everything )
+		
+		means[index] <- mean(relativeAbundance)
+		names[index] <- names(myT)[i]
+		pValuesGenotype[index] <-myAnova$"p-value"[2] 
+		pValuesTime[index] <-myAnova$"p-value"[3] 
+		pValuesTimeGenotypeInteraction[index] <-myAnova$"p-value"[4] 
+		
+		pValuesWeightUnivariate[index] <- anova(lm(  relativeAbundance ~ maxWeightLossPercent))$"Pr(>F)"[1]
+	
+		someBug <- myT[,i]
+		someCage <- myT$cage
+		someFrame <- data.frame( someBug, someCage)
+		medians <- summaryBy( someBug ~ someCage , data=someFrame, FUN=list(median))$someBug.median
+		times <- factor(c("0","0","0", "3","3","3","3","4","4","4","4","12","12","12","12","18","18","18"))
+		
+		pValuesTimeFromMedians[index] <- anova(lm( medians ~ times ))$"Pr(>F)"[1]
+		
+	
+		indexes[index] <- i
+		
+		index <- index + 1
+	}
+	
+	dFrame <- data.frame(names, pValuesGenotype,pValuesTime,
+	pValuesTimeGenotypeInteraction,pValuesTimeFromMedians,pValuesWeightUnivariate ,means,indexes)
+	
+	dFrame <- dFrame [order(dFrame$pValuesTimeGenotypeInteraction),]
+	
+	dFrame$pValuesGenotypeAdjusted <- p.adjust( dFrame$pValuesGenotype, method = "BH")
+	dFrame$pValuesTimeAdjusted <- p.adjust( dFrame$pValuesTime, method = "BH")
+	dFrame$pValuesTimeGenotypeInteractionAdjusted <- p.adjust( dFrame$pValuesTimeGenotypeInteraction, method = "BH")
+	dFrame$pValuesTimeFromMediansAdjusted <- p.adjust( dFrame$pValuesTimeFromMedians , method = "BH")
+	
+	dFrame$pValuesWeightUnivariateAdjusted<- p.adjust( dFrame$pValuesWeightUnivariate , method = "BH")
+	
+	
+	write.table(dFrame, file=paste("bigModelPValuesForTaxa_NoWeight_L", aLevel, ".txt",sep=""), sep="\t",row.names=FALSE)
+	
+	
+	pdf(paste("cageForTaxaSortedTimeNoWeight_L", aLevel, ".pdf"))
+	
+	for( i in 1:nrow(dFrame))
+	{
+		index <- dFrame$indexes[i]
+		relativeAbundance <- myT[,index]
+		cage <- factor(myT$cage)
+		genotype <- factor(myT$genotype )
+		time <- myT$time
+		myFrame <- data.frame(relativeAbundance,cage,genotype,maxWeightLossPercent ,time)
+		
+		par(mfrow=c(2,2),mar=c(4,4,1,1), oma=c(2,2,1,1))
+		
+		mainText = paste( "genotype adjust p=", 
+			format( dFrame$pValuesGenotypeAdjusted[i] , digits=3 ) )
+		
+		boxplot( relativeAbundance ~ genotype, main=mainText)
+		
+		stripchart(relativeAbundance ~ genotype, 
+				data = myFrame,vertical = TRUE, pch = 21, add=TRUE )		
+				
+		plot( relativeAbundance ~ myT$cage,las=2, main="cage",xlab="")
+		
+		for( j in 1:length(cage))
+		{
+			stripchart(relativeAbundance[j]~ cage[j], pch = 16, 
+						data = myFrame,vertical = TRUE, add=TRUE,
+						col = ifelse(genotype[j] == "KO", "RED", "BLUE"))	
+		}
+		
+		mainText = paste( "genotype*time=", format( dFrame$pValuesTimeGenotypeInteractionAdjusted[i] , digits=3 ),
+					"time=", format( dFrame$pValuesTimeAdjusted[i] , digits=3 ) )
+		
+		plot( relativeAbundance ~ myT$time, col = ifelse(myT$genotype=="WT", "BLUE", "RED" ), main=mainText)	
+		abline( lm(relativeAbundance ~ myT$time))
+		
+		mainText = paste( "weight adjust p=",format(dFrame$pValuesWeightUnivariateAdjusted[i],digits=3))
+		
+		#plot( myT$maxWeightLossPercent ~ relativeAbundance , col = ifelse(myT$genotype=="WT", "BLUE", "RED" ),
+		#		main = mainText)
+		#abline( lm(myT$maxWeightLossPercent ~ relativeAbundance ))
+		
+		someBug <- myT[,index]
+		someCage <- myT$cage
+		someFrame <- data.frame( someBug, someCage)
+		medians <- summaryBy( someBug ~ someCage , data=someFrame, FUN=list(median))$someBug.median
+		times <- factor(c("0","0","0", "3","3","3","3","4","4","4","4","12","12","12","12","18","18","18"),
+		c("0","3","4","12","18"))
+		someFrame <- data.frame( medians, times)
+	
+		plot( medians~times  ,main=format( dFrame$pValuesTimeFromMediansAdjusted[i] , digits=3 )  )
+
+		stripchart(medians~times  , 
+				data = someFrame,vertical = TRUE, pch = 21, add=TRUE )		
+		
+		mtext(dFrame$names[i] ,
+	        SOUTH<-1, line=0.2, adj=1.0, cex=.7,   col="black", outer=TRUE)
+	}
+	
+	
+	par(mfrow=c(2,2))
+	
+	hist(pValuesGenotype,breaks=20)
+	hist(pValuesTime,breaks=20)
+	hist(pValuesTimeGenotypeInteraction,breaks=20)
+	
+	
+dFrame <- dFrame [order(dFrame$indexes),]
+plot( seq(1:nrow(dFrame)), -log10(dFrame$pValuesGenotypeAdjusted), col="red",pch=16,ylim=c(0,14),
+ylab="-log10(FDR adjusted p-value)", xlab="MDS Axis")
+lines( seq(1:nrow(dFrame)), -log10(dFrame$pValuesGenotypeAdjusted), col="red")
+
+points( seq(1:nrow(dFrame)), -log10(dFrame$pValuesTimeAdjusted), col="blue",pch=16)
+lines( seq(1:nrow(dFrame)), -log10(dFrame$pValuesTimeAdjusted), col="blue")
+
+points( seq(1:nrow(dFrame)), -log10(dFrame$pValuesTimeGenotypeInteractionAdjusted), col="black",pch=16)
+lines( seq(1:nrow(dFrame)), -log10(dFrame$pValuesTimeGenotypeInteractionAdjusted), col="black")
+
+#points( seq(1:nrow(dFrame)), -log10(dFrame$ pValuesWeightUnivariateAdjusted  ), col="green",pch=16)
+#lines( seq(1:nrow(dFrame)), -log10(dFrame$ pValuesWeightUnivariateAdjusted  ), col="green")
+
+lines( c(0,nrow(dFrame)), c( -log10(.05),-log10(.05)) , lty=2)
+
+
+legend("topright",c("genotype", "time", "time:genotype"),pch=16, 
+	col=c("red", "blue", "black","green"))
+	
+dev.off()	
+}
+	
+sum( dFrame$pValuesGenotypeAdjusted < 0.1)
+sum( dFrame$pValuesTimeAdjusted < 0.1)
+sum( dFrame$pValuesTimeGenotypeInteractionAdjusted < 0.1)
