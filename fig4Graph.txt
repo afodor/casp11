@@ -1,0 +1,36 @@
+
+rm(list=ls())
+
+setwd("C:\\Users\\afodor\\git\\casp11")
+
+myT <- read.table("pcoa_rerunPlusMetadata_L6.txt", sep="\t", header=TRUE)
+
+timeColors <- vector()
+
+for( i in 1:nrow(myT))
+{
+	if( myT$time[i] == 0 ) 
+	{
+		timeColors[i] = "black"		
+	}
+	
+	if( myT$time[i] == 3 ) 
+	{
+		timeColors[i] = "red"		
+	}
+	if( myT$time[i] == 4 ) 
+	{
+		timeColors[i] = "green"		
+	}
+	if( myT$time[i] == 12 ) 
+	{
+		timeColors[i] = "blue"		
+	}
+	if( myT$time[i] == 18 ) 
+	{
+		timeColors[i] = "orange"		
+	}
+}
+
+plot(myT$MDS2, myT$MDS3,pch=16,cex=1.6,col=timeColors)
+
