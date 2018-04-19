@@ -4,6 +4,7 @@ rm(list=ls())
 setwd("C:\\Users\\afodor\\git\\casp11\\")
 
 library("nlme")
+library("doBy")
 
 for (aLevel in 2:6)
 {
