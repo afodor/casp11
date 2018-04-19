@@ -1,7 +1,7 @@
 
 rm(list=ls())
 
-setwd("C:\\tingData\\may_2017_rerun")
+setwd("C:\\Users\\afodor\\git\\casp11")
 library("nlme")
 library("doBy")
 
