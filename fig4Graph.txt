@@ -42,5 +42,8 @@ par(mfrow=c(3,2))
 for ( t in timepoints) 
 {
 	mainText = paste("time",t,"months")
-	plot(myT$MDS2[myT$time==t], myT$MDS3[myT$time==t],main=mainText)
+	plot(myT$MDS2[myT$time==t], myT$MDS3[myT$time==t],main=mainText,xlab="MDS1", ylab="MDS2",
+			col= myT$cage[myT$time==t],pch=16,cex=1.4)
 }
+
+
