@@ -1,7 +1,7 @@
 rm(list=ls())
 
 # change this path to wherever this git directory is installed locally
-setwd("C:\\Users\\afodor\\git\\casp11\\")
+setwd("C:\\Users\\corei7\\git\\casp11\\")
 
 library("nlme")
 library("doBy")
@@ -131,7 +131,7 @@ for (aLevel in 2:6)
 		c("0","3","4","12","18"))
 		someFrame <- data.frame( medians, times)
 	
-		plot( medians~times  ,main=format( "pValue from median times", dFrame$pValuesTimeFromMediansAdjusted[i] , digits=3 )  )
+		plot( medians~times  ,main="times"  )
 
 		stripchart(medians~times  , 
 				data = someFrame,vertical = TRUE, pch = 21, add=TRUE )		
@@ -174,3 +174,4 @@ dev.off()
 sum( dFrame$pValuesGenotypeAdjusted < 0.1)
 sum( dFrame$pValuesTimeAdjusted < 0.1)
 sum( dFrame$pValuesTimeGenotypeInteractionAdjusted < 0.1)
+
